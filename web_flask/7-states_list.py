@@ -1,23 +1,25 @@
 #!/usr/bin/python3
-"""Flask app to generate html list"""
+"""module that starts a Flask"""
 from flask import Flask, render_template
 from models import storage
-app = Flask('web_flask')
-app.url_map.strict_slashes = False
+from models.state import State
 
-
-@app.route('/states_list')
-def list_of_states():
-    """Render html with unordered list"""
-    states = sorted(storage.all('State').values(), key=lambda s: s.name)
-    return render_template('7-states_list.html', states=states)
+app = Flask(__name__)
 
 
 @app.teardown_appcontext
-def teardown_db(*args, **kwargs):
-    """Close database or file storage"""
+def handle_appcontext(self):
+    """Method for handling app context"""
     storage.close()
 
 
+@app.route('/states_list', strict_slashes=False)
+def list_states():
+    """Displays 7-states_list html"""
+    states = storage.all(State).values()
+    return render_template('7-states_list.html', states=states)
+
+
 if __name__ == "__main__":
-    app.run(host='0.0.0.0', port=5000)
+    """ app listening on host 0.0.0.0"""
+    app.run(host='0.0.0.0', port='5000')
