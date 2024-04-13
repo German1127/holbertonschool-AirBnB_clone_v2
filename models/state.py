@@ -1,28 +1,27 @@
 #!/usr/bin/python3
-""" class State  """
-from sqlalchemy import Column, String
-from models.base_model import BaseModel, Base
-from sqlalchemy.orm import relationship
+"""state class."""
+import models
+from os import getenv
+from models.base_model import Base
+from models.base_model import BaseModel
 from models.city import City
-import os
+from sqlalchemy import Column
+from sqlalchemy import String
+from sqlalchemy.orm import relationship
 
 
 class State(BaseModel, Base):
-    """ class State """
-    __tablename__ = 'states'
+    """Represents a state for a MySQL database"""
+    __tablename__ = "states"
     name = Column(String(128), nullable=False)
-    if os.getenv("HBNB_TYPE_STORAGE") == "db":
-        cities = relationship("City", backref="states")
-    else:
-        name = ""
+    cities = relationship("City",  backref="state", cascade="delete")
 
+    if getenv("HBNB_TYPE_STORAGE") != "db":
         @property
         def cities(self):
-            from models import storage
-            from models.city import City
+            """Get a list of all related City objects."""
             city_list = []
-            all_city = storage.all(City)
-            for _, v in all_city.items():
-                if self.id == v.state_id:
-                    city_list.append(v)
+            for city in list(models.storage.all(City).values()):
+                if city.state_id == self.id:
+                    city_list.append(city)
             return city_list
