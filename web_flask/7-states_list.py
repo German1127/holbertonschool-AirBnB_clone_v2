@@ -1,27 +1,23 @@
 #!/usr/bin/python3
-"""flask server running"""
+"""Flask app to generate html list"""
 from flask import Flask, render_template
 from models import storage
-from models.state import State
-
-
-app = Flask(__name__)
-"""Flask instance"""
+app = Flask('web_flask')
 app.url_map.strict_slashes = False
 
 
-@app.route('/states_list', strict_slashes=False)
-def display_states():
-    """Prints html document with a list of states"""
-    states = storage.all(State).values()
+@app.route('/states_list')
+def list_of_states():
+    """Render html with unordered list"""
+    states = sorted(storage.all('State').values(), key=lambda s: s.name)
     return render_template('7-states_list.html', states=states)
 
 
 @app.teardown_appcontext
-def remove_current_session(exc):
-    """Remove the current SQLAlchemy session."""
+def teardown_db(*args, **kwargs):
+    """Close database or file storage"""
     storage.close()
 
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000)
+    app.run(host='0.0.0.0', port=5000)
